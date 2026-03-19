@@ -1,0 +1,9 @@
+langchain
+langgraph
+langchain-openai
+langchain-google-genai
+feedparser
+requests
+pandas
+pydantic
+python-dotenv

@@ -1,0 +1,21 @@
+[workspace]
+authors = ["yingziyu-llt <yingziyu-Lin@outlook.com>"]
+channels = ["conda-forge"]
+name = "daily_paper_agent"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+langchain = ">=1.2.10,<2"
+langgraph = ">=1.0.10,<2"
+langchain-openai = ">=1.1.10,<2"
+langchain-google-genai = ">=4.2.1,<5"
+feedparser = ">=6.0.12,<7"
+requests = ">=2.32.5,<3"
+pandas = ">=3.0.1,<4"
+pydantic = ">=2.12.5,<3"
+pymupdf = ">=1.25.0,<2"
+pdf2image = ">=1.17.0,<2"
+python-dotenv = ">=1.0.0,<2"
