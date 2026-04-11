@@ -11,6 +11,8 @@ __pycache__/
 reports/
 temp_images/
 paper_cache.json
+*.db
+*.bak
 
 GEMINI.md
 
