@@ -23,17 +23,20 @@ def _get_pdf_url(paper_link: str, journal: str) -> Optional[str]:
     if "arxiv.org" in paper_link:
         # https://arxiv.org/abs/2603.02952 -> https://arxiv.org/pdf/2603.02952
         return paper_link.replace("/abs/", "/pdf/")
-    elif "biorxiv.org" in paper_link:
-        # https://www.biorxiv.org/content/10.64898/2026.02.23.707420v1
-        # -> https://www.biorxiv.org/content/10.64898/2026.02.23.707420v1.full.pdf
-        link = paper_link.rstrip("/")
-        if not link.endswith(".pdf"):
+    elif "biorxiv.org" in paper_link or "medrxiv.org" in paper_link:
+        # https://www.biorxiv.org/content/10.1101/2023.01.01.123456v1
+        # -> https://www.biorxiv.org/content/10.1101/2023.01.01.123456v1.full.pdf
+        link = paper_link.strip().rstrip("/")
+        if link.endswith(".pdf"):
+            return link
+        # If the link is a landing page content link, append .full.pdf
+        if "/content/" in link:
             return link + ".full.pdf"
-        return link
+        return link + ".full.pdf" # Fallback
     elif "nature.com" in paper_link:
         # Nature papers often have: /articles/s41587-026-03040-4
         # PDF: /articles/s41587-026-03040-4.pdf
-        link = paper_link.rstrip("/")
+        link = paper_link.strip().rstrip("/")
         if not link.endswith(".pdf"):
             return link + ".pdf"
         return link

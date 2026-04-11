@@ -34,5 +34,8 @@ AUTH_CODE = os.getenv("AUTH_CODE", "")
 
 ONEBOT_HTTP_URL = os.getenv("ONEBOT_HTTP_URL", "http://localhost:3000")
 ONEBOT_ACCESS_TOKEN = os.getenv("ONEBOT_ACCESS_TOKEN", "")  # 填入你测试成功的 Token
-QQ_GROUP_ID = int(os.getenv("QQ_GROUP_ID", 3170556910))       # 接收简报的群号或账号
+QQ_USER_ID = os.getenv("QQ_USER_ID", "12345678")       # 接收简报的用户QQ/OpenID
 TEMP_IMAGE_DIR = os.getenv("TEMP_IMAGE_DIR", "temp_images")
+
+QQ_BOT_APPID = os.getenv("QQ_BOT_APPID", "")
+QQ_BOT_SECRET = os.getenv("QQ_BOT_SECRET", "")

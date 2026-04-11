@@ -1,6 +1,8 @@
 import feedparser
 import re
+import threading
 from typing import List, Dict, Any
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from .base import BaseFetcher
 
 class NatureFetcher(BaseFetcher):
@@ -30,31 +32,42 @@ class NatureFetcher(BaseFetcher):
             return False
         return True
 
-    def fetch(self) -> List[Dict[str, Any]]:
-        results = []
-        seen_links = set()
-        for journal, url in self.NATURE_FEEDS.items():
-            try:
-                feed = feedparser.parse(url)
-                for entry in feed.entries:
+    def _fetch_feed(self, journal: str, url: str, seen_links: set, lock: threading.Lock) -> List[Dict[str, Any]]:
+        papers = []
+        try:
+            feed = feedparser.parse(url)
+            for entry in feed.entries:
+                with lock:
                     if entry.link in seen_links or not self.is_research_article(entry):
                         continue
-                    
-                    summary = entry.get('summary', '') or entry.get('description', '')
-                    clean_summary = re.sub(r'<[^>]+>', '', summary)
-                    search_text = f"{entry.title} {clean_summary}"
-                    # For Nature, we bypass the strict keyword matching requirement
-                    # because Nature abstracts are often too short to hit multiple keywords.
-                    # We add a fake keyword 'Nature_Bypass' so it survives the config.py pre-filter if enabled.
-                    results.append({
-                        "journal": journal,
-                        "title": entry.title,
-                        "link": entry.link,
-                        "published": entry.get('published', 'N/A'),
-                        "matches": ["Nature_Bypass"] * 5,  # Give it enough matches to pass any threshold
-                        "summary": clean_summary[:1000]
-                    })
                     seen_links.add(entry.link)
-            except Exception as e:
-                print(f"Error fetching {journal}: {e}")
-        return results
+                
+                summary = entry.get('summary', '') or entry.get('description', '')
+                clean_summary = re.sub(r'<[^>]+>', '', summary)
+                
+                papers.append({
+                    "journal": journal,
+                    "title": entry.title,
+                    "link": entry.link,
+                    "published": entry.get('published', 'N/A'),
+                    "matches": ["Nature_Bypass"] * 5,
+                    "summary": clean_summary[:1000]
+                })
+        except Exception as e:
+            print(f"Error fetching Nature {journal}: {e}")
+        return papers
+
+    def fetch(self) -> List[Dict[str, Any]]:
+        seen_links = set()
+        lock = threading.Lock()
+        all_papers = []
+        
+        with ThreadPoolExecutor(max_workers=len(self.NATURE_FEEDS)) as executor:
+            future_to_feed = {
+                executor.submit(self._fetch_feed, journal, url, seen_links, lock): journal 
+                for journal, url in self.NATURE_FEEDS.items()
+            }
+            for future in as_completed(future_to_feed):
+                all_papers.extend(future.result())
+                
+        return all_papers
