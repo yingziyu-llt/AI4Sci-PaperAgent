@@ -27,6 +27,7 @@ PRE_FILTER_KEYWORD_THRESHOLD = 2 # Number of keywords required to pass the pre-f
 # Output Settings
 REPORT_OUTPUT_DIR = "reports"
 REPORT_FILENAME_FORMAT = "Daily_Paper_Report_%Y%m%d.md"
+DB_PATH = os.getenv("DB_PATH", "papers.db")
 
 SENDER_EMAIL = os.getenv("SENDER_EMAIL", "")
 RECEIVER_EMAIL = os.getenv("RECEIVER_EMAIL", "")
