@@ -44,10 +44,14 @@ class NatureFetcher(BaseFetcher):
                 
                 summary = entry.get('summary', '') or entry.get('description', '')
                 clean_summary = re.sub(r'<[^>]+>', '', summary)
-                
+
+                authors = [a.get('name', '') for a in entry.get('authors', [])]
+                authors_str = ", ".join(authors) if authors else entry.get('author', 'Unknown')
+
                 papers.append({
                     "journal": journal,
                     "title": entry.title,
+                    "authors": authors_str,
                     "link": entry.link,
                     "published": entry.get('published', 'N/A'),
                     "matches": ["Nature_Bypass"] * 5,

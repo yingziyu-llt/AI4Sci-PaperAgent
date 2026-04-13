@@ -85,16 +85,24 @@ async def filter_node(state: PaperState) -> Dict[str, Any]:
     # 消除警告的关键：对于 DeepSeek，确保 include_raw=False 或指定特定的解析模式
     structured_llm = llm.with_structured_output(BatchEvaluation, include_raw=False)
     
-    system_prompt = """You are a strict, top-tier AI/ML Research Evaluator focusing on AI Methodologies and AI for Science.
+    system_prompt = """You are a strict, top-tier AI/ML Research Evaluator focusing on AI Methodologies and AI for Science (Bio+Chem).
     
     Evaluate papers across 5 dimensions: Innovation, Paper Quality, Idea Quality, AI Relevance, and Bio Relevance.
     
+    CORE INTERESTS:
+    - Single-cell & Spatial Omics: Generative models (Diffusion/Flow Matching), GNN spatial reconstruction, Perturb-seq, cell-cell communication.
+    - AI Drug Design (AIDD): 3D geometric generation, binding affinity, transcriptome-guided drug discovery, Molecular Glue, PROTAC.
+    - Structure & Simulation: Protein folding, AlphaFold apps, enzyme engineering, antibody design, MD simulations.
+    - ML Methodology: Geometric Deep Learning (SE(3), GNNs), Bio Foundation Models (pLMs, ESM-3, scGPT), Advanced Generative Models (Discrete Diffusion, Riemannian Flow).
+    - Automated Lab: Self-driving labs, AI-driven closed-loop discovery, robotic synthesis, AI scientist paradigms.
+    
     CRITICAL INSTRUCTIONS & RED LINES:
-    1. ZERO TOLERANCE for Data Analysis / Wet Lab: If a paper is purely data analysis (e.g. single-cell atlas mapping, differential expression analysis without novel models) OR purely wet-lab experimental, BOTH relevance scores MUST BE 0. We ONLY want papers about AI/ML models and methodologies.
+    1. ZERO TOLERANCE for Data Analysis / Wet Lab: If a paper is purely data analysis (e.g. single-cell atlas mapping, differential expression analysis without novel models) OR purely wet-lab experimental, BOTH relevance scores MUST BE 0. We ONLY want papers proposing or advancing AI/ML models and methodologies.
     2. PENALIZE INCREMENTAL WORK: Strongly penalize papers that just "pile up engineering work" without algorithmic innovation. Innovation score should be low.
-    3. BE OPEN-MINDED TO NEW PARADIGMS: Strongly REWARD novel architectures, generative models (Diffusion, Flow Matching), geometric deep learning, and large pre-trained models. Do not limit to existing Bio Foundation Models (like scGPT/Geneformer)—be open to new methodologies.
-    4. Provide scores (1-10) for each dimension independently based on the above criteria.
-    5. Output ONLY valid JSON according to the schema."""
+    3. BE OPEN-MINDED TO NEW PARADIGMS: Strongly REWARD novel architectures, generative models, geometric deep learning, and large pre-trained models.
+    4. CONSIDER AUTHORSHIP: Give a slight boost to Paper Quality and Idea Quality if the authors/corresponding authors are from notable or highly regarded AI/Bio labs, but do not let it override the core algorithmic evaluation.
+    5. Provide scores (1-10) for each dimension independently based on the above criteria.
+    6. Output ONLY valid JSON according to the schema."""
 
     # 3. 分组并创建异步任务
     batches = [papers_to_score[i : i + MAX_PAPERS_PER_BATCH] for i in range(0, len(papers_to_score), MAX_PAPERS_PER_BATCH)]

@@ -38,9 +38,14 @@ class ArxivFetcher(BaseFetcher):
                 
                 # Arxiv API date format: 2024-03-21T18:00:00Z
                 date_str = entry.get('published', '')[:10]
+                
+                authors = [a.get('name', '') for a in entry.get('authors', [])]
+                authors_str = ", ".join(authors) if authors else entry.get('author', 'Unknown')
+                
                 papers.append({
                     "journal": f"arXiv ({cat})",
                     "title": entry.title,
+                    "authors": authors_str,
                     "link": entry.link,
                     "published": date_str,
                     "summary": summary,

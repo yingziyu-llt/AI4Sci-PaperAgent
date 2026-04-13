@@ -59,9 +59,21 @@ class BiorxivFetcher(BaseFetcher):
                     doi = item.get("doi")
                     journal_name = "bioRxiv" if server == "biorxiv" else "medRxiv"
                     
+                    authors = item.get("authors", "")
+                    author_corresponding = item.get("author_corresponding", "")
+                    institution = item.get("author_corresponding_institution", "")
+                    
+                    author_info = authors
+                    if author_corresponding:
+                        author_info += f" (Corresponding: {author_corresponding}"
+                        if institution:
+                            author_info += f", {institution}"
+                        author_info += ")"
+                    
                     all_papers.append({
                         "journal": journal_name,
                         "title": title,
+                        "authors": author_info,
                         "link": f"https://www.{server}.org/content/{doi}v{version}",
                         "published": item.get("date"),
                         "doi": doi,

@@ -15,7 +15,8 @@ KEYWORDS = {
         "cheminformatics", "pharmacology", "target discovery", "lead optimization",
         "medicinal chemistry", "chemical space", "drug discovery", "ADME", "toxicity",
         "molecular dynamics", "virtual screening", "QSAR", "ADMET", "generative chemistry", 
-        "de novo design", "fragment-based", "hit identification", "geometric generation"
+        "de novo design", "fragment-based", "hit identification", "geometric generation",
+        "3D generation", "transcriptome-guided"
     ],
     "AI_ML_Methodology": [
         "deep learning", "machine learning", "neural network", "GNN", "graph",
@@ -33,7 +34,12 @@ KEYWORDS = {
         "enzyme", "antibody", "peptide", "docking", "geometry", "structural biology",
         "biophysics", "molecular dynamics", "simulation", "computational biology",
         "protein design", "inverse folding", "protein language model", "rosetta", 
-        "allostery", "protein-protein interaction", "PPI"
+        "allostery", "protein-protein interaction", "PPI", "antibody design", "enzyme engineering", "MD simulation"
+    ],
+    "Automated_Lab": [
+        "automated lab", "self-driving lab", "autonomous discovery", "robotic lab",
+        "lab automation", "closed-loop discovery", "AI-driven laboratory",
+        "robotics", "high-throughput screening", "automated synthesis", "AI scientist"
     ]
 }
 
