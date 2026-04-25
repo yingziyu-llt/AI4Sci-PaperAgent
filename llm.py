@@ -1,6 +1,7 @@
 import os
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_google_vertexai import ChatVertexAI
 from daily_paper_agent.config import (
     LLM_PROVIDER,
     OPENAI_API_KEY,
@@ -9,6 +10,9 @@ from daily_paper_agent.config import (
     GEMINI_MODEL,
     SiliconCloud_API_KEY,
     SiliconCloud_MODEL,
+    VERTEX_PROJECT,
+    VERTEX_LOCATION,
+    VERTEX_MODEL,
 )
 
 def get_llm(provider: str = None):
@@ -33,5 +37,12 @@ def get_llm(provider: str = None):
             google_api_key=GEMINI_API_KEY,
             temperature=0.3
         )
+    elif provider_to_use == "vertex":
+        return ChatVertexAI(
+            model_name=VERTEX_MODEL,
+            project=VERTEX_PROJECT,
+            location=VERTEX_LOCATION,
+            temperature=0.3
+        )
     else:
-        raise ValueError(f"Unsupported LLM provider: {LLM_PROVIDER}")
+        raise ValueError(f"Unsupported LLM provider: {provider_to_use}")

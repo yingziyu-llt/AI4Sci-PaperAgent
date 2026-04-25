@@ -1,7 +1,9 @@
 import streamlit as st
 import os
 import re
+import numpy as np
 from datetime import datetime
+from daily_paper_agent.database import save_feedback, get_paper, get_all_feedback
 
 # 配置页面
 st.set_page_config(
@@ -72,6 +74,23 @@ def get_report_list():
     reports.sort(key=lambda x: x["raw_date"], reverse=True)
     return reports
 
+def handle_feedback(paper_id: str, label: int):
+    """Handle like/dislike button click."""
+    paper = get_paper(paper_id)
+    if paper:
+        # Convert blob back to numpy if needed
+        embedding = np.frombuffer(paper['embedding'], dtype=np.float32) if paper['embedding'] else None
+        save_feedback(
+            paper_id=paper_id,
+            title=paper['title'],
+            abstract=paper['abstract'],
+            label=label,
+            embedding=embedding
+        )
+        st.success(f"已反馈偏好: {paper['title'][:30]}...")
+    else:
+        st.error("找不到该论文信息，无法记录反馈。")
+
 def main():
     st.sidebar.title("📚 论文追踪系统")
     st.sidebar.markdown("---")
@@ -94,23 +113,56 @@ def main():
         with open(report_path, "r", encoding="utf-8") as f:
             content = f.read()
             
-        # 侧边栏快速跳转 (通过标题锚点)
+        # 侧边栏快速跳转
         st.sidebar.markdown("### 快速导航")
         if "## 🤖 AI 最新进展" in content:
             st.sidebar.markdown("- [AI 最新进展](#ai)")
         if "## 🧬 AI for Science 生物相关进展" in content:
             st.sidebar.markdown("- [AI4S 生物相关进展](#ai4s)")
-        if "## 📚 其他扫描论文" in content:
-            st.sidebar.markdown("- [其他扫描论文](#6013e903)")
 
-        # 渲染正文
-        st.markdown(content, unsafe_allow_html=True)
+        # --- 增强的渲染逻辑：支持 Human-in-the-loop ---
+        # 简单切分章节或论文
+        parts = re.split(r"(?=<!-- paper_id: .*? -->)", content)
+        
+        # 显示头部 (第一部分通常是标题和统计)
+        st.markdown(parts[0], unsafe_allow_html=True)
+        
+        # 显示带反馈按钮的论文
+        for i, part in enumerate(parts[1:]):
+            # 提取 paper_id
+            match = re.search(r"<!-- paper_id: (.*?) -->", part)
+            if match:
+                paper_id = match.group(1)
+                # 移除注释，渲染 Markdown
+                paper_md = re.sub(r"<!-- paper_id: .*? -->", "", part)
+                st.markdown(paper_md, unsafe_allow_html=True)
+                
+                # 添加反馈按钮
+                col1, col2, _ = st.columns([1.5, 1.5, 7])
+                with col1:
+                    if st.button("👍 赞", key=f"like_{paper_id}_{i}"):
+                        handle_feedback(paper_id, 1)
+                with col2:
+                    if st.button("👎 踩", key=f"dislike_{paper_id}_{i}"):
+                        handle_feedback(paper_id, -1)
+                st.markdown("---")
+            else:
+                # 兜底：渲染 Markdown
+                st.markdown(part, unsafe_allow_html=True)
         
     except Exception as e:
         st.error(f"读取报告出错: {e}")
 
     st.sidebar.markdown("---")
-    st.sidebar.info("基于 DeepSeek-R1 驱动的 AI4S 论文追踪系统")
+    # 显示当前的反馈统计
+    feedbacks = get_all_feedback()
+    if feedbacks:
+        likes = sum(1 for f in feedbacks if f['label'] > 0)
+        dislikes = sum(1 for f in feedbacks if f['label'] < 0)
+        st.sidebar.metric("积累偏好数据", f"{len(feedbacks)} 篇")
+        st.sidebar.text(f"👍 赞: {likes} | 👎 踩: {dislikes}")
+    
+    st.sidebar.info("已启用演化推荐：系统将基于您的历史偏好自动优化后续文章推荐。")
 
 if __name__ == "__main__":
     main()

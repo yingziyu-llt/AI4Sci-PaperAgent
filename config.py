@@ -16,6 +16,11 @@ SiliconCloud_MODEL = os.getenv("SILICONCLOUD_MODEL", "Pro/deepseek-ai/DeepSeek-V
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview")
 
+# For Vertex AI
+VERTEX_PROJECT = os.getenv("VERTEX_PROJECT", "")  # Your GCP Project ID
+VERTEX_LOCATION = os.getenv("VERTEX_LOCATION", "us-central1")
+VERTEX_MODEL = os.getenv("VERTEX_MODEL", "gemini-3.1-pro-preview")
+
 # Filtering Settings
 MAX_PAPERS_PER_BATCH = 10 # Number of papers to send to LLM in one filtering prompt
 MIN_RELEVANCE_SCORE = 6   # 1-10 scale
@@ -28,6 +33,13 @@ PRE_FILTER_KEYWORD_THRESHOLD = 2 # Number of keywords required to pass the pre-f
 REPORT_OUTPUT_DIR = "reports"
 REPORT_FILENAME_FORMAT = "Daily_Paper_Report_%Y%m%d.md"
 DB_PATH = os.getenv("DB_PATH", "papers.db")
+
+# Embedding Settings
+# Recommended: BAAI/bge-m3 or BAAI/bge-large-zh-v1.5 on SiliconCloud
+EMBEDDING_PROVIDER = os.getenv("EMBEDDING_PROVIDER", "siliconCloud") 
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3")
+EMBEDDING_API_KEY = os.getenv("EMBEDDING_API_KEY", SiliconCloud_API_KEY)
+EMBEDDING_BASE_URL = os.getenv("EMBEDDING_BASE_URL", "https://api.siliconflow.cn/v1")
 
 SENDER_EMAIL = os.getenv("SENDER_EMAIL", "")
 RECEIVER_EMAIL = os.getenv("RECEIVER_EMAIL", "")

@@ -1,5 +1,7 @@
 import sqlite3
 import os
+import json
+import numpy as np
 from .config import DB_PATH
 
 def get_db_connection():
@@ -16,7 +18,83 @@ def init_db():
                 processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+        # Store full paper info for feedback lookup
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS papers (
+                paper_id TEXT PRIMARY KEY,
+                title TEXT,
+                abstract TEXT,
+                journal TEXT,
+                link TEXT,
+                embedding BLOB,
+                score REAL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        # label: 1 for like, -1 for dislike
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS user_feedback (
+                paper_id TEXT PRIMARY KEY,
+                title TEXT,
+                abstract TEXT,
+                label INTEGER, 
+                embedding BLOB,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
         conn.commit()
+
+def save_paper(paper_id: str, title: str, abstract: str, journal: str, link: str, score: float, embedding: np.ndarray = None):
+    """Save paper details for later retrieval."""
+    embedding_blob = embedding.tobytes() if embedding is not None else None
+    with get_db_connection() as conn:
+        conn.execute('''
+            INSERT OR REPLACE INTO papers (paper_id, title, abstract, journal, link, score, embedding)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (paper_id, title, abstract, journal, link, score, embedding_blob))
+        conn.commit()
+
+def get_paper(paper_id: str):
+    """Retrieve paper details by ID."""
+    with get_db_connection() as conn:
+        cur = conn.execute('SELECT * FROM papers WHERE paper_id = ?', (paper_id,))
+        return cur.fetchone()
+
+def get_papers_by_ids(paper_ids: list[str]):
+    """Retrieve multiple papers by IDs."""
+    if not paper_ids:
+        return []
+    placeholders = ', '.join(['?'] * len(paper_ids))
+    with get_db_connection() as conn:
+        cur = conn.execute(f'SELECT * FROM papers WHERE paper_id IN ({placeholders})', paper_ids)
+        return cur.fetchall()
+
+def save_feedback(paper_id: str, title: str, abstract: str, label: int, embedding: np.ndarray = None):
+    """Save or update user feedback for a paper."""
+    embedding_blob = embedding.tobytes() if embedding is not None else None
+    with get_db_connection() as conn:
+        conn.execute('''
+            INSERT OR REPLACE INTO user_feedback (paper_id, title, abstract, label, embedding)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (paper_id, title, abstract, label, embedding_blob))
+        conn.commit()
+
+def get_all_feedback():
+    """Retrieve all user feedback with embeddings."""
+    with get_db_connection() as conn:
+        cur = conn.execute('SELECT paper_id, title, abstract, label, embedding FROM user_feedback')
+        rows = cur.fetchall()
+        results = []
+        for row in rows:
+            embedding = np.frombuffer(row['embedding'], dtype=np.float32) if row['embedding'] else None
+            results.append({
+                "paper_id": row['paper_id'],
+                "title": row['title'],
+                "abstract": row['abstract'],
+                "label": row['label'],
+                "embedding": embedding
+            })
+        return results
 
 def is_paper_seen(paper_id: str) -> bool:
     """Check if a paper ID has already been processed."""

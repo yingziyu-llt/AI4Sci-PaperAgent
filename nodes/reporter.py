@@ -1,15 +1,20 @@
 import os
+import numpy as np
 from datetime import datetime
 from typing import Dict, Any
 from daily_paper_agent.state import PaperState
 from daily_paper_agent.utils import update_cache
 from daily_paper_agent.config import REPORT_OUTPUT_DIR, REPORT_FILENAME_FORMAT, MIN_RELEVANCE_SCORE
+from daily_paper_agent.database import save_paper
 
 
 def _write_paper_entry(f, sp, index: int = 0):
     """Write a single paper entry in markdown format."""
     p = sp["paper"]
-    f.write(f"""### {p['title']}
+    p_id = p.get("doi") or p.get("id") or p.get("link")
+    # Add a hidden paper ID for feedback
+    f.write(f"""<!-- paper_id: {p_id} -->
+### {p['title']}
 """)
     f.write(f"""- **来源**: {p['journal']} | **综合评分**: {sp['score']:.1f}/10
 """)
@@ -45,7 +50,20 @@ def report_node(state: PaperState) -> Dict[str, Any]:
     ai_papers = state.get("ai_papers", [])
     bio_papers = state.get("bio_papers", [])
     all_scored = state["scored_papers"]
-    top_papers = state.get("top_papers", [])
+    
+    # Save papers to DB for later retrieval in UI
+    for sp in all_scored:
+        p = sp["paper"]
+        p_id = p.get("doi") or p.get("id") or p.get("link")
+        save_paper(
+            paper_id=p_id,
+            title=p.get("title"),
+            abstract=p.get("summary"),
+            journal=p.get("journal"),
+            link=p.get("link"),
+            score=sp.get("score"),
+            embedding=p.get("embedding")
+        )
     
     if not os.path.exists(REPORT_OUTPUT_DIR):
         os.makedirs(REPORT_OUTPUT_DIR)
