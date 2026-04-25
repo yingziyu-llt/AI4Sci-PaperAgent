@@ -1,8 +1,16 @@
 import streamlit as st
 import os
+import sys
 import re
 import numpy as np
 from datetime import datetime
+
+# Ensure the current directory's parent is in sys.path so we can import daily_paper_agent
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
+
 from daily_paper_agent.database import save_feedback, get_paper, get_all_feedback
 
 # 配置页面
