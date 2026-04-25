@@ -1,7 +1,6 @@
 import os
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_google_vertexai import ChatVertexAI
 from daily_paper_agent.config import (
     LLM_PROVIDER,
     OPENAI_API_KEY,
@@ -38,8 +37,9 @@ def get_llm(provider: str = None):
             temperature=0.3
         )
     elif provider_to_use == "vertex":
-        return ChatVertexAI(
-            model_name=VERTEX_MODEL,
+        # Use ChatGoogleGenerativeAI with project/location for Vertex AI
+        return ChatGoogleGenerativeAI(
+            model=VERTEX_MODEL,
             project=VERTEX_PROJECT,
             location=VERTEX_LOCATION,
             temperature=0.3

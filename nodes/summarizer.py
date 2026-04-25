@@ -43,7 +43,7 @@ async def summarize_node(state: PaperState) -> Dict[str, Any]:
     print(f"  🤖 AI General: {len(ai_papers)} papers")
     print(f"  🧬 AI4S Bio:   {len(bio_papers)} papers")
     
-    llm = get_llm(provider="gemini")
+    llm = get_llm()
     structured_llm = llm.with_structured_output(PaperSummary, include_raw=False)
     
     semaphore = asyncio.Semaphore(5)  # Limit concurrent PDF downloads & LLM calls

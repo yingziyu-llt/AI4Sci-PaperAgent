@@ -165,8 +165,8 @@ async def filter_node(state: PaperState) -> Dict[str, Any]:
     # 4. 分组并创建异步任务
     batches = [papers_to_score[i : i + MAX_PAPERS_PER_BATCH] for i in range(0, len(papers_to_score), MAX_PAPERS_PER_BATCH)]
 
-    # 限制并发数以防触发 API Rate Limit (RPM)
-    semaphore = asyncio.Semaphore(100) 
+    # 限制并发数以防触发 API Rate Limit (RPM) 且避免连接池耗尽
+    semaphore = asyncio.Semaphore(20) 
 
     async def sem_task(batch, idx):
         async with semaphore:
